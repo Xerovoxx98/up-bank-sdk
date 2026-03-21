@@ -26,18 +26,20 @@ jobs:
         with:
           enable-cache: true
       
-      - name: Install Python
-        run: uv python install 3.12
+      - name: Set up Python with UV
+        run: |
+          uv python install 3.12
+          uv venv
       
       - name: Install MkDocs + plugins
         run: |
-          uv pip install --system mkdocs-material \
+          uv pip install mkdocs-material \
                       "mkdocs-material[imaging]" \
                       mkdocstrings-python \
                       mkdocs-glightbox
       
       - name: Build MkDocs site
-        run: mkdocs build
+        run: uv run mkdocs build
       
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v4
