@@ -1,0 +1,26 @@
+/* Custom styles for up-bank-sdk documentation */
+
+.md-typeset code {
+    background-color: var(--md-code-background-color);
+    border-radius: 0.1rem;
+    font-size: 0.9em;
+    padding: 0.1em 0.3em;
+}
+
+.md-typeset pre {
+    border-radius: 0.3rem;
+}
+
+:root {
+    --md-primary-fg-color: #5C6BC0;
+    --md-primary-fg-color--light: #7986CB;
+    --md-primary-fg-color--lighter: #9FA8DA;
+    --md-primary-fg-color--lightest: #C5CAE9;
+}
+
+[data-md-color-primary="indigo"] {
+    --md-primary-fg-color: #5C6BC0;
+    --md-primary-fg-color--light: #7986CB;
+    --md-primary-fg-color--lighter: #9FA8DA;
+    --md-primary-fg-color--lightest: #C5CAE9;
+}
