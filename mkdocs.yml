@@ -1,0 +1,113 @@
+site_name: up-bank-sdk
+site_description: Python SDK for the Up Bank API with sync and async support
+site_author: Brock Loader
+site_url: https://Xerovoxx98.github.io/up-bank-sdk
+
+repo_name: Xerovoxx98/up-bank-sdk
+repo_url: https://github.com/Xerovoxx98/up-bank-sdk
+
+theme:
+  name: material
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-7
+        name: Switch to dark mode
+    - scheme: slate
+      primary: indigo
+      accent: indigo
+      toggle:
+        icon: material/brightness-4
+        name: Switch to light mode
+  font:
+    text: Roboto
+    code: Roboto Mono
+  features:
+    - navigation.instant
+    - navigation.tracking
+    - navigation.sections
+    - navigation.expand
+    - content.code.copy
+    - content.code.annotate
+    - toc.integrate
+    - search.suggest
+    - search.highlight
+    - content.tabs.link
+    - content.action.view
+    - content.action.edit
+
+plugins:
+  - search
+  - mkdocstrings:
+      handlers:
+        python:
+          options:
+            show_source: true
+            show_root_heading: true
+            show_root_full_path: false
+            show_category_heading: true
+            show_symbol_type_heading: true
+            show_symbol_type_toc: true
+            docstring_style: google
+            docstring_section_style: spacy
+            merge_init_into_class: true
+            show_signature_annotations: true
+  - glightbox
+
+markdown_extensions:
+  - pymdownx.highlight:
+      anchor_linenums: true
+      line_spans: __span
+      pygments_lang_class: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - admonition
+  - pymdownx.details
+  - pymdownx.mark
+  - attr_list
+  - md_in_html
+  - toc:
+      permalink: true
+      toc_depth: 3
+  - footnotes
+  - pymdownx.critic
+  - pymdownx.caret
+  - pymdownx.keys
+  - pymdownx.tilde
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/Xerovoxx98
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - Home: index.md
+  - Getting Started:
+      - getting-started/index.md
+      - getting-started/installation.md
+      - getting-started/quickstart.md
+      - getting-started/authentication.md
+  - Guides:
+      - guides/index.md
+      - guides/pagination.md
+      - guides/filtering.md
+      - guides/webhooks.md
+      - guides/error-handling.md
+  - API Reference:
+      - api-reference/index.md
+      - api-reference/client.md
+      - api-reference/resources/accounts.md
+      - api-reference/resources/transactions.md
+      - api-reference/resources/categories.md
+      - api-reference/resources/tags.md
+      - api-reference/resources/attachments.md
+      - api-reference/resources/webhooks.md
+      - api-reference/exceptions.md
+  - Changelog: changelog.md
+  - License: license.md
