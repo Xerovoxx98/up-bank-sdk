@@ -4,8 +4,6 @@
 
 Python SDK for the Up Bank API with sync/async support
 
-Python SDK for the Up Bank API.
-
 ## Installation
 
 ```bash
