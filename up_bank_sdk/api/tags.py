@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-from typing import TYPE_CHECKING, Any
+from typing import TYPE_CHECKING, Any, TypeAlias
 
 from up_bank_sdk.models.resources import Tag
 from up_bank_sdk.paginated import PaginatedResponse
@@ -10,7 +10,7 @@ from up_bank_sdk.paginated import PaginatedResponse
 if TYPE_CHECKING:
     from up_bank_sdk._protocols import HTTPClientProtocol
 
-type TagList = list[str]
+TagList: TypeAlias = list[str]
 
 
 class TagsResource:
