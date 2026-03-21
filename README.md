@@ -1,4 +1,8 @@
-# up-bank-sdk
+# UP Bank SDK
+
+![Tests](https://github.com/Xerovoxx98/up-bank-sdk/actions/workflows/tests.yml/badge.svg) ![Python 3.14](https://img.shields.io/badge/python-3.14-blue.svg) ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)
+
+Python SDK for the Up Bank API with sync/async support
 
 Python SDK for the Up Bank API.
 
