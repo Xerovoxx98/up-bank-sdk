@@ -1,4 +1,4 @@
-name: CI
+name: Python Tests
 
 on:
   push:
@@ -10,31 +10,38 @@ jobs:
   test:
     name: Test (Python ${{ matrix.python-version }})
     runs-on: [self-hosted, Linux, X64]
-
     strategy:
       matrix:
         python-version: ["3.12", "3.13", "3.14"]
-
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
-
       - name: Install UV
         uses: astral-sh/setup-uv@v4
         with:
           enable-cache: true
-
       - name: Install Python ${{ matrix.python-version }} via UV
         run: uv python install ${{ matrix.python-version }}
-
       - name: Install dependencies
         run: uv sync --dev --all-extras --python ${{ matrix.python-version }}
-
       - name: Run tests
-        run: uv run pytest tests/ -v --tb=short --python ${{ matrix.python-version }}
+        run: uv run pytest tests/ -v --tb=short
 
+  lint:
+    name: Lint & Type Check
+    runs-on: [self-hosted, Linux, X64]
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+      - name: Install UV
+        uses: astral-sh/setup-uv@v4
+        with:
+          enable-cache: true
+      - name: Install Python 3.14 via UV
+        run: uv python install 3.14
+      - name: Install dependencies
+        run: uv sync --dev --all-extras --python 3.14
       - name: Run linting
         run: uv run ruff check up_bank_sdk/
-
       - name: Run type checking
         run: uv run mypy up_bank_sdk/
