@@ -3,7 +3,7 @@
 from __future__ import annotations
 
 from collections.abc import AsyncIterator, Awaitable, Callable, Iterator
-from typing import Any, TypeVar
+from typing import Any, Generic, TypeVar
 
 from pydantic import BaseModel
 
@@ -17,7 +17,7 @@ class PaginationLinks(BaseModel):
     next: str | None = None
 
 
-class AsyncPaginatedResponse[T]:  # noqa: UP046
+class AsyncPaginatedResponse(Generic[T]):
     """A page of paginated results with navigation methods.
 
     Provides access to the current page of results and allows fetching

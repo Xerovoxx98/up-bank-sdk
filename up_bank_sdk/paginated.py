@@ -17,7 +17,7 @@ class PaginationLinks(BaseModel):
     next: str | None = None
 
 
-class PaginatedResponse(Generic[T]):  # noqa: UP046
+class PaginatedResponse(Generic[T]):
     """A page of paginated results with navigation methods.
 
     Provides access to the current page of results and allows fetching

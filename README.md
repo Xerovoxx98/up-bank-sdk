@@ -1,6 +1,6 @@
 # UP Bank SDK
 
-![Tests](https://github.com/Xerovoxx98/up-bank-sdk/actions/workflows/tests.yml/badge.svg) ![Python 3.14](https://img.shields.io/badge/python-3.14-blue.svg) ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg) [![PyPI version](https://badge.fury.io/py/up-bank-sdk.svg)](https://pypi.org/project/up-bank-sdk/) [![PyPI downloads](https://img.shields.io/pypi/dm/up-bank-sdk.svg)](https://pypi.org/project/up-bank-sdk/)
+![Tests](https://github.com/Xerovoxx98/up-bank-sdk/actions/workflows/ci.yml/badge.svg) ![Python 3.12+](https://img.shields.io/badge/python-3.12%2B-blue.svg) ![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg) [![PyPI version](https://badge.fury.io/py/up-bank-sdk.svg)](https://pypi.org/project/up-bank-sdk/) [![PyPI downloads](https://img.shields.io/pypi/dm/up-bank-sdk.svg)](https://pypi.org/project/up-bank-sdk/)
 
 Python SDK for the Up Bank API with sync/async support
 
