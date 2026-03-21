@@ -1,6 +1,6 @@
 """Up Bank SDK - Python SDK for the Up Bank API."""
 
-__version__ = "0.1.0"
+__version__ = "0.3.0"
 
 from up_bank_sdk.async_client import AsyncClient
 from up_bank_sdk.client import Client

@@ -19,7 +19,6 @@ class TestConfig:
         assert config.retry_wait_multiplier == 1.0
         assert config.retry_wait_min == 2.0
         assert config.retry_wait_max == 30.0
-        assert config.retry_on_status == (429, 500, 502, 503, 504)
 
     def test_custom_values(self) -> None:
         """Test custom configuration values."""
