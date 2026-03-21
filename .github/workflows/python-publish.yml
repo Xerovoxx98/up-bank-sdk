@@ -8,6 +8,7 @@ jobs:
   publish:
     name: Publish to PyPI
     runs-on: [self-hosted, Linux, X64]
+    
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -20,17 +21,17 @@ jobs:
       - name: Install Python 3.14 via UV
         run: uv python install 3.14
       
+      - name: Create virtual environment
+        run: uv venv --python 3.14 .venv
+      
       - name: Install build and twine
-        run: |
-          uv pip install --python 3.14 build twine
+        run: uv pip install build twine
       
       - name: Build package
-        run: |
-          uv run --python 3.14 python -m build --sdist --wheel
+        run: uv run python -m build
       
       - name: Publish to PyPI
         env:
           TWINE_USERNAME: __token__
           TWINE_PASSWORD: ${{ secrets.PYPI_TOKEN }}
-        run: |
-          uv run --python 3.14 twine upload dist/*
+        run: uv run twine upload dist/*
