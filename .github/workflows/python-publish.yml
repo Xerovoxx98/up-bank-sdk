@@ -26,7 +26,7 @@ jobs:
       
       - name: Build package
         run: |
-          uv run --python 3.14 python -m build --sdist --wheel dist/
+          uv run --python 3.14 python -m build --sdist --wheel
       
       - name: Publish to PyPI
         env:
