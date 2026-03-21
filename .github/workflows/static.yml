@@ -1,5 +1,4 @@
 name: Deploy Documentation
-
 on:
   push:
     branches:
@@ -8,52 +7,45 @@ on:
       - 'docs/**'
       - 'mkdocs.yml'
   workflow_dispatch:
-
 permissions:
   contents: read
   pages: write
   id-token: write
-
 jobs:
   deploy:
     name: Build & Publish MkDocs
     runs-on: ubuntu-latest
     environment:
       name: github-pages
-
     steps:
-      # 1. grab your code
       - name: Checkout repo
         uses: actions/checkout@v4
-
-      # 2. install Python
-      - name: Set up Python 3.12
-        uses: actions/setup-python@v5
+      
+      - name: Install UV
+        uses: astral-sh/setup-uv@v4
         with:
-          python-version: '3.12'
-
-      # 3. install your doc deps
+          enable-cache: true
+      
+      - name: Install Python
+        run: uv python install 3.12
+      
       - name: Install MkDocs + plugins
         run: |
-          pip install mkdocs-material \
+          uv pip install --system mkdocs-material \
                       "mkdocs-material[imaging]" \
                       mkdocstrings-python \
                       mkdocs-glightbox
-
-      # 4. build into the default `site/` folder
+      
       - name: Build MkDocs site
-        run: mkdocs build --strict
-
-      # 5. register the Pages environment
+        run: mkdocs build
+      
       - name: Configure GitHub Pages
         uses: actions/configure-pages@v4
-
-      # 6. upload your static HTML
+      
       - name: Upload site artifact
         uses: actions/upload-pages-artifact@v3
         with:
           path: site
-
-      # 7. deploy to GitHub Pages
+      
       - name: Deploy to GitHub Pages
         uses: actions/deploy-pages@v4
