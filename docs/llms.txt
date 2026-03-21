@@ -1,0 +1,398 @@
+# up-bank-sdk - Python SDK for Up Bank API
+
+## SDK Overview
+
+- **Language**: Python 3.12+
+- **Package**: up-bank-sdk (PyPI)
+- **Sync HTTP**: requests library
+- **Async HTTP**: httpx library
+- **Data Validation**: Pydantic v2
+- **Retry Logic**: tenacity with exponential backoff
+- **API Version**: Up Bank REST API v1
+
+## Client Initialization
+
+### Sync Client
+
+```python
+from up_bank_sdk import Client
+
+client = Client("up:your-personal-access-token")
+# Returns: Client instance
+```
+
+### Async Client
+
+```python
+from up_bank_sdk import AsyncClient
+
+async with AsyncClient("up:your-personal-access-token") as client:
+    # Returns: AsyncClient instance
+    pass
+```
+
+### Configuration
+
+```python
+from up_bank_sdk import Client, Config
+
+config = Config(
+    base_url="https://api.up.com.au/api/v1",  # Default
+    timeout=30.0,           # Request timeout in seconds
+    max_retries=3,          # Max retry attempts
+    retry_wait_multiplier=1.0,  # Exponential backoff multiplier
+    retry_wait_min=2.0,     # Minimum wait between retries (seconds)
+    retry_wait_max=30.0,   # Maximum wait between retries (seconds)
+)
+
+client = Client("up:token", config=config)
+```
+
+## API Methods
+
+### AccountsResource
+
+```python
+client.accounts.list(
+    page_size: int | None = None,
+    account_type: str | None = None,  # "TRANSACTIONAL" or "SAVER"
+    ownership_type: str | None = None,  # "INDIVIDUAL" or "JOINT"
+) -> list[Account]
+
+client.accounts.get(account_id: str) -> Account
+
+client.accounts.list_transactions(
+    account_id: str,
+    page_size: int | None = None,
+) -> PaginatedResponse[Transaction]
+```
+
+### TransactionsResource
+
+```python
+client.transactions.list(
+    page_size: int | None = None,
+    status: str | None = None,  # "settled", "pending", "held"
+    since: str | None = None,   # ISO 8601 datetime
+    until: str | None = None,   # ISO 8601 datetime
+    category: str | None = None,  # Category ID
+    tag: str | None = None,     # Tag label
+) -> PaginatedResponse[Transaction]
+
+client.transactions.get(transaction_id: str) -> Transaction
+
+client.transactions.categorize(
+    transaction_id: str,
+    category_id: str | None,  # None to remove category
+) -> None
+```
+
+### CategoriesResource
+
+```python
+client.categories.list(
+    parent: str | None = None,  # Parent category ID to get children
+) -> list[Category]
+
+client.categories.get(category_id: str) -> Category
+```
+
+### TagsResource
+
+```python
+client.tags.list(
+    page_size: int | None = None,
+) -> PaginatedResponse[Tag]
+
+client.tags.add_tags(
+    transaction_id: str,
+    tags: list[str],
+) -> None
+
+client.tags.remove_tags(
+    transaction_id: str,
+    tags: list[str],
+) -> None
+```
+
+### AttachmentsResource
+
+```python
+client.attachments.list(
+    page_size: int | None = None,
+) -> PaginatedResponse[Attachment]
+
+client.attachments.get(attachment_id: str) -> Attachment
+```
+
+### WebhooksResource
+
+```python
+client.webhooks.list(
+    page_size: int | None = None,
+) -> PaginatedResponse[Webhook]
+
+client.webhooks.create(
+    url: str,
+    description: str | None = None,
+) -> Webhook
+
+client.webhooks.get(webhook_id: str) -> Webhook
+
+client.webhooks.delete(webhook_id: str) -> None
+
+client.webhooks.ping(webhook_id: str) -> None
+
+client.webhooks.logs(
+    webhook_id: str,
+    page_size: int | None = None,
+) -> PaginatedResponse[WebhookLog]
+```
+
+### UtilResource
+
+```python
+client.util.ping() -> UtilPingResponse
+```
+
+## Async Client Methods
+
+All async methods use `async def` and require `await`:
+
+```python
+async with AsyncClient("up:token") as client:
+    accounts = await client.accounts.list()
+    response = await client.transactions.list(page_size=100)
+    await client.transactions.categorize("tx-id", "category-id")
+
+    # Auto-pagination
+    async for tx in client.transactions.list(page_size=100):
+        print(tx.attributes.description)
+```
+
+## Pydantic Models
+
+### Base Models
+
+```python
+class UpModel(BaseModel):
+    """Base model with populate_by_name=True, extra='ignore', str_strip_whitespace=True"""
+
+class MoneyObject(UpModel):
+    currency_code: str           # ISO 4217 (e.g., "AUD")
+    value: str                  # Decimal string (e.g., "100.00")
+    value_in_base_units: int    # Integer in cents (e.g., 10000)
+```
+
+### Resource Models
+
+```python
+class Account(UpModel):
+    type: Literal["accounts"] = "accounts"
+    id: str
+    attributes: AccountAttributes
+    relationships: dict[str, Any] | None = None
+
+class AccountAttributes(UpModel):
+    display_name: str
+    account_type: str           # "TRANSACTIONAL" or "SAVER"
+    ownership_type: str         # "INDIVIDUAL" or "JOINT"
+    balance: MoneyObject
+    created_at: str            # ISO 8601
+
+class Transaction(UpModel):
+    type: Literal["transactions"] = "transactions"
+    id: str
+    attributes: TransactionAttributes
+    relationships: TransactionRelationships | None = None
+
+class TransactionAttributes(UpModel):
+    status: str                # "SETTLED", "PENDING", "HELD"
+    raw_text: str | None
+    description: str
+    message: str | None
+    is_categorizable: bool
+    hold_info: HoldInfo | None
+    amount: MoneyObject
+    foreign_amount: MoneyObject | None
+    category: CategoryResourceIdentifier | None
+    tags: list[TagResourceIdentifier]
+    created_at: str
+    merchant: MerchantInfo | None
+
+class HoldInfo(UpModel):
+    amount: MoneyObject
+    foreign_amount: MoneyObject | None
+
+class Category(UpModel):
+    type: Literal["categories"] = "categories"
+    id: str                    # e.g., "groceries"
+    attributes: CategoryAttributes
+    relationships: CategoryRelationships | None = None
+
+class CategoryAttributes(UpModel):
+    name: str                  # e.g., "Groceries"
+
+class Tag(UpModel):
+    type: Literal["tags"] = "tags"
+    id: str                    # Tag label (e.g., "Holiday")
+    relationships: TagRelationships | None = None
+
+class Attachment(UpModel):
+    type: Literal["attachments"] = "attachments"
+    id: str
+    attributes: AttachmentAttributes
+    relationships: AttachmentRelationships | None = None
+
+class AttachmentAttributes(UpModel):
+    created_at: str | None
+    file_url: str | None
+    file_url_expires_at: str | None
+    file_extension: str | None  # e.g., "pdf", "png"
+    file_content_type: str | None  # e.g., "image/png"
+
+class Webhook(UpModel):
+    type: Literal["webhooks"] = "webhooks"
+    id: str
+    attributes: WebhookAttributes
+
+class WebhookAttributes(UpModel):
+    url: str
+    description: str | None
+    secret: str | None         # For signature verification
+    created_at: str | None
+
+class WebhookLog(UpModel):
+    type: Literal["webhook-delivery-logs"] = "webhook-delivery-logs"
+    id: str
+    attributes: WebhookLogAttributes
+
+class WebhookLogAttributes(UpModel):
+    request: WebhookLogRequest | None
+    response: WebhookLogResponseData | None
+    created_at: str | None
+
+class WebhookLogRequest(UpModel):
+    uri: str | None
+    method: str | None
+    headers: dict[str, str] | None
+    body: str | None
+
+class WebhookLogResponseData(UpModel):
+    status_code: int | None
+    headers: dict[str, str] | None
+    body: str | None
+
+class UtilPingResponse(UpModel):
+    meta: PingMeta
+
+class PingMeta(UpModel):
+    id: str
+    status_emoji: str          # Usually "⚡️"
+```
+
+## Pagination
+
+### Sync (PaginatedResponse[T])
+
+```python
+response = client.transactions.list(page_size=100)
+
+# Properties
+response.data      # list[T] - items on current page
+response.has_more  # bool - True if next page exists
+response.has_prev   # bool - True if previous page exists
+
+# Methods
+response.get_next()   # Returns PaginatedResponse[T] | None
+response.get_prev()   # Returns PaginatedResponse[T] | None
+
+# Iteration
+for tx in response:
+    print(tx.attributes.description)
+```
+
+### Async (AsyncPaginatedResponse[T])
+
+```python
+# Explicit pagination
+response = await client.transactions.list(page_size=100)
+
+if response.has_more:
+    next_page = await response.get_next()
+
+# Auto-pagination
+async for tx in client.transactions.list(page_size=100):
+    print(tx.attributes.description)
+```
+
+## Exception Hierarchy
+
+```
+SDKError (Base)
+├── APIError
+│   ├── AuthenticationError   # 401 - invalid token
+│   ├── NotFoundError        # 404 - resource not found
+│   ├── InvalidRequestError   # 422 - malformed request
+│   ├── RateLimitError      # 429 - rate limited
+│   │   └── retry_after: int | None  # seconds to wait
+│   └── ServerError         # 5xx - server error
+```
+
+### Exception Usage
+
+```python
+from up_bank_sdk.exceptions import (
+    SDKError, APIError, AuthenticationError,
+    NotFoundError, RateLimitError, ServerError
+)
+
+try:
+    account = client.accounts.get("invalid-id")
+except NotFoundError:
+    print("Account not found")
+except RateLimitError as e:
+    print(f"Rate limited. Retry after {e.retry_after} seconds")
+except APIError as e:
+    print(f"API error {e.status_code}: {e.message}")
+```
+
+## Important Nuances
+
+### Snake_case Conversion
+- API returns camelCase JSON (e.g., `displayName`, `accountType`)
+- SDK automatically converts to snake_case Pydantic attributes
+- Use snake_case when accessing: `account.attributes.display_name`
+
+### Pagination URLs
+- API returns full URLs in `links.next` (not relative paths)
+- SDK handles both relative paths and full URLs in `_make_url()`
+- No SSRF risk - only uses URLs from API responses
+
+### Auto-pagination (Async Only)
+- Auto-pagination fetches ALL pages automatically
+- Use `break` to exit early if needed
+- Not available in sync client
+
+### Webhook Signature Verification
+- Webhook secret stored in `webhook.attributes.secret`
+- Verify signatures using HMAC-SHA256
+- Always verify to prevent spoofing
+
+### API Base URL
+- Default: `https://api.up.com.au/api/v1`
+- Configurable via `Config.base_url`
+
+### Retry Behavior
+- Automatically retries on 429 (RateLimitError) and 5xx (ServerError)
+- Uses exponential backoff with configurable min/max wait times
+- Does NOT retry on 4xx errors (except 429)
+
+### Request Timeouts
+- Default timeout: 30 seconds
+- Configurable via `Config.timeout`
+
+### Money Values
+- `value`: Decimal string (e.g., "100.50")
+- `value_in_base_units`: Integer in smallest currency units (e.g., 10050 for $100.50 AUD)
+- Convert: `int(float(money.value) * 100) == money.value_in_base_units`
