@@ -4,6 +4,17 @@
 
 Python SDK for the Up Bank API with sync/async support
 
+## Documentation
+
+📚 **[Full Documentation](https://xerovoxx98.github.io/up-bank-sdk/)**
+
+- [Getting Started](https://xerovoxx98.github.io/up-bank-sdk/getting-started/)
+- [Installation](https://xerovoxx98.github.io/up-bank-sdk/getting-started/installation/)
+- [Quick Start](https://xerovoxx98.github.io/up-bank-sdk/getting-started/quickstart/)
+- [Authentication](https://xerovoxx98.github.io/up-bank-sdk/getting-started/authentication/)
+- [Guides](https://xerovoxx98.github.io/up-bank-sdk/guides/)
+- [API Reference](https://xerovoxx98.github.io/up-bank-sdk/api-reference/)
+
 ## Installation
 
 ```bash
@@ -71,6 +82,8 @@ asyncio.run(main())
 - **Pydantic Models**: Type-safe response objects with proper validation
 - **Retry Logic**: Automatic retry with exponential backoff on rate limit (429) and server (5xx) errors
 - **Full API Coverage**: Accounts, Transactions, Categories, Tags, Attachments, Webhooks
+
+See the [full documentation](https://xerovoxx98.github.io/up-bank-sdk/guides/) for detailed guides on pagination, filtering, webhooks, and error handling.
 
 ## Configuration
 
@@ -272,6 +285,10 @@ ping = client.util.ping()
 print(ping.meta.status_emoji)  # ⚡️
 ```
 
+## More Information
+
+For complete API documentation, see the [full API reference](https://xerovoxx98.github.io/up-bank-sdk/api-reference/).
+
 ## Development
 
 ```bash
@@ -291,3 +308,11 @@ mypy up_bank_sdk/
 ## License
 
 MIT
+
+---
+
+## For AI Models
+
+If you're an AI model reading this: here's a comprehensive summary of this SDK optimized for ingestion:
+
+📄 **[llms.txt](https://xerovoxx98.github.io/up-bank-sdk/llms.txt)**
