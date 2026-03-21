@@ -15,4 +15,3 @@ class Config:
     retry_wait_multiplier: float = 1.0
     retry_wait_min: float = 2.0
     retry_wait_max: float = 30.0
-    retry_on_status: tuple[int, ...] = (429, 500, 502, 503, 504)
