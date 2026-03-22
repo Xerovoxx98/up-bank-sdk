@@ -89,7 +89,7 @@ class TestSyncHTTPClient:
         mock_response = MagicMock()
         mock_response.status_code = 422
         mock_response.content = b"not json"
-        mock_response.json.side_effect = Exception("JSON decode error")
+        mock_response.json.side_effect = ValueError("JSON decode error")
 
         with pytest.raises(InvalidRequestError) as exc_info:
             client._handle_response(mock_response)

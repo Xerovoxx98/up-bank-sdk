@@ -22,12 +22,12 @@ def main() -> None:
         sys.exit(1)
 
     print("Using UP_API_TOKEN from environment.")
-    client = Client(token)
 
     print("\n" + "=" * 60)
     print("SYNC CLIENT TESTS")
     print("=" * 60)
-    _test_sync_client(client)
+    with Client(token) as client:
+        _test_sync_client(client)
 
     print("\n" + "=" * 60)
     print("ASYNC CLIENT TESTS")
@@ -151,8 +151,11 @@ def _test_sync_client(client: Client) -> None:
             print(f"Created webhook: {webhook.id} -> {webhook.attributes.url}")
         finally:
             print(f"Deleting webhook {webhook.id}...")
-            client.webhooks.delete(webhook.id)
-            print("Deleted successfully")
+            try:
+                client.webhooks.delete(webhook.id)
+                print("Deleted successfully")
+            except Exception as e:
+                print(f"Warning: Failed to delete webhook {webhook.id}: {e}")
 
 
 async def _test_async_client(token: str) -> None:
@@ -268,8 +271,11 @@ async def _test_async_client(token: str) -> None:
                 print(f"Created webhook: {webhook.id} -> {webhook.attributes.url}")
             finally:
                 print(f"Deleting webhook {webhook.id}...")
-                await client.webhooks.delete(webhook.id)
-                print("Deleted successfully")
+                try:
+                    await client.webhooks.delete(webhook.id)
+                    print("Deleted successfully")
+                except Exception as e:
+                    print(f"Warning: Failed to delete webhook {webhook.id}: {e}")
 
         print("\n--- Testing auto-pagination with async for ---")
         print("Fetching transactions using async iteration:")

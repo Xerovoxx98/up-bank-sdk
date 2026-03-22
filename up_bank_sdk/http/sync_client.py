@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from types import TracebackType
 from typing import Any
 
 import requests  # type: ignore[import-untyped]
@@ -80,7 +81,7 @@ class SyncHTTPClient:
         if status == 422:
             try:
                 json_body = response.json() if response.content else {}
-            except Exception:
+            except ValueError:
                 json_body = {}
             errors = json_body.get("errors", [])
             raise InvalidRequestError(
@@ -206,6 +207,6 @@ class SyncHTTPClient:
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: object,
+        exc_tb: TracebackType | None,
     ) -> None:
         self.close()

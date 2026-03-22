@@ -3,6 +3,7 @@
 from __future__ import annotations
 
 import logging
+from types import TracebackType
 from typing import Any
 
 import httpx
@@ -80,7 +81,7 @@ class AsyncHTTPClient:
         if status == 422:
             try:
                 json_body = response.json() if response.content else {}
-            except Exception:
+            except ValueError:
                 json_body = {}
             errors = json_body.get("errors", [])
             raise InvalidRequestError(
@@ -221,6 +222,6 @@ class AsyncHTTPClient:
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: object,
+        exc_tb: TracebackType | None,
     ) -> None:
         await self.close()

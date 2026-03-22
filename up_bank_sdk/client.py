@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from types import TracebackType
+
 from up_bank_sdk.api import (
     AccountsResource,
     AttachmentsResource,
@@ -46,6 +48,6 @@ class Client:
         self,
         exc_type: type[BaseException] | None,
         exc_val: BaseException | None,
-        exc_tb: object,
+        exc_tb: TracebackType | None,
     ) -> None:
         self.close()
