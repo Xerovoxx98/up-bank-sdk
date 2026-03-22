@@ -21,7 +21,7 @@ def main() -> None:
         print("Get your token from the Up app: Settings > Data sharing > Personal Access Token")
         sys.exit(1)
 
-    print(f"Using token: {token[:20]}...")
+    print("Using UP_API_TOKEN from environment.")
     client = Client(token)
 
     print("\n" + "=" * 60)
