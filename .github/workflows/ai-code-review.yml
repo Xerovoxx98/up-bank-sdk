@@ -1,0 +1,185 @@
+name: MiniMax Code Review
+on:
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:  # Manual trigger for full repo scans
+
+permissions:
+  contents: read
+  pull-requests: write
+  issues: write
+
+jobs:
+  code-review:
+    name: AI-Powered Code Analysis
+    runs-on: [self-hosted, Linux, X64]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Get full history for context
+
+      - name: Get changed files (PR only)
+        id: changed-files
+        if: github.event_name == 'pull_request'
+        run: |
+          # Get list of changed files in the PR
+          git diff --name-only origin/${{ github.base_ref }}...HEAD > changed_files.txt
+          echo "files=$(cat changed_files.txt | tr '\n' ' ')" >> $GITHUB_OUTPUT
+          
+      - name: Prepare code for review
+        id: prepare
+        shell: bash
+        run: |
+          # Create a consolidated file with code context
+          cat > code_context.txt << 'CONTEXT_START'
+          Repository: ${{ github.repository }}
+          Branch: ${{ github.ref_name }}
+          Event: ${{ github.event_name }}
+          
+          CONTEXT_START
+          
+          if [ "${{ github.event_name }}" == "pull_request" ]; then
+            echo "=== PULL REQUEST CHANGES ===" >> code_context.txt
+            echo "" >> code_context.txt
+            
+            # Add changed files with their content
+            while IFS= read -r file; do
+              if [ -f "$file" ] && [ -s "$file" ]; then
+                # Skip binary files and very large files
+                if file "$file" | grep -q text; then
+                  size=$(wc -c < "$file")
+                  if [ $size -lt 50000 ]; then
+                    echo "--- FILE: $file ---" >> code_context.txt
+                    cat "$file" >> code_context.txt
+                    echo -e "\n" >> code_context.txt
+                  fi
+                fi
+              fi
+            done < changed_files.txt
+          else
+            echo "=== FULL REPOSITORY SCAN ===" >> code_context.txt
+            echo "" >> code_context.txt
+            
+            # For full scans, focus on key files
+            find . -type f \( -name "*.py" -o -name "*.js" -o -name "*.ts" -o -name "*.go" -o -name "*.java" -o -name "*.md" \) \
+              ! -path "*/node_modules/*" ! -path "*/.git/*" ! -path "*/venv/*" \
+              -size -50k -exec sh -c '
+                echo "--- FILE: {} ---" >> code_context.txt
+                cat {} >> code_context.txt
+                echo "" >> code_context.txt
+              ' \;
+          fi
+          
+          # Store context size for logging
+          size=$(wc -c < code_context.txt)
+          echo "context_size=$size" >> $GITHUB_OUTPUT
+
+      - name: Run MiniMax AI Review
+        id: ai-review
+        env:
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+        shell: bash
+        run: |
+          API_URL="https://api.minimax.chat/v1/text/chatcompletion_v2"
+          MODEL="MiniMax-M2.7-highspeed"
+          
+          CODE_CONTEXT=$(cat code_context.txt)
+          
+          PROMPT="You are an expert code reviewer. Analyze the following code and provide:
+
+          1. **Code Quality Issues**: Any bugs, anti-patterns, or poor practices
+          2. **Performance Improvements**: Optimization opportunities
+          3. **Security Concerns**: Potential vulnerabilities or unsafe patterns
+          4. **Documentation Gaps**: Missing or outdated documentation
+          5. **Best Practice Violations**: Deviations from language/framework conventions
+          6. **Suggestions**: Specific, actionable improvements
+
+          Be constructive, specific, and prioritize issues by severity (🔴 Critical, 🟡 Medium, 🟢 Minor).
+
+          Code to review:
+          \`\`\`
+          $CODE_CONTEXT
+          \`\`\`"
+
+          RESPONSE=$(curl -s -X POST "$API_URL" \
+            -H "Authorization: Bearer $MINIMAX_API_KEY" \
+            -H "Content-Type: application/json" \
+            -d "$(jq -n \
+              --arg model "$MODEL" \
+              --arg prompt "$PROMPT" \
+              '{
+                model: $model,
+                messages: [
+                  {
+                    role: "user",
+                    content: $prompt
+                  }
+                ],
+                temperature: 0.3,
+                max_tokens: 4000
+              }')")
+          
+          REVIEW=$(echo "$RESPONSE" | jq -r '.choices[0].message.content // .reply // "Error: Unable to parse response"')
+          
+          echo "$REVIEW" > review_output.md
+          
+          echo "review_complete=true" >> $GITHUB_OUTPUT
+
+      - name: Post review as PR comment
+        if: github.event_name == 'pull_request' && steps.ai-review.outputs.review_complete == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create formatted comment
+          cat > comment.md << 'COMMENT_EOF'
+          ## 🤖 MiniMax AI Code Review
+          
+          COMMENT_EOF
+          
+          cat review_output.md >> comment.md
+          
+          echo "" >> comment.md
+          echo "---" >> comment.md
+          echo "*Powered by MiniMax-M2.7-highspeed | Generated at $(date)*" >> comment.md
+          
+          # Post comment using gh CLI
+          gh pr comment ${{ github.event.pull_request.number }} \
+            --body-file comment.md \
+            --repo ${{ github.repository }}
+
+      - name: Create issue for full scan
+        if: github.event_name == 'workflow_dispatch' && steps.ai-review.outputs.review_complete == 'true'
+        shell: bash
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Create issue with review results
+          cat > issue.md << 'ISSUE_EOF'
+          ## 🤖 Full Repository Code Review
+          
+          ISSUE_EOF
+          
+          cat review_output.md >> issue.md
+          
+          echo "" >> issue.md
+          echo "---" >> issue.md
+          echo "*Scan initiated manually on $(date)*" >> issue.md
+          
+          gh issue create \
+            --title "AI Code Review - $(date +%Y-%m-%d)" \
+            --body-file issue.md \
+            --label "ai-review,code-quality" \
+            --repo ${{ github.repository }}
+
+      - name: Upload review artifact
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: minimax-review-${{ github.sha }}
+          path: |
+            review_output.md
+            code_context.txt
+          retention-days: 30
