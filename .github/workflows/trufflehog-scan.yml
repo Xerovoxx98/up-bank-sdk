@@ -42,8 +42,7 @@ jobs:
             echo "Review the output above for details."
           fi
           
-          # Always exit successfully so workflow continues
-          exit 0
+          exit $EXIT_CODE
       
       # Optional: Want to fail the workflow when secrets are found?
       # Change the last line from "exit 0" to "exit $EXIT_CODE"
