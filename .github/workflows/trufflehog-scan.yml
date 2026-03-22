@@ -1,0 +1,41 @@
+name: TruffleHog Secret Scan
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  schedule:
+    - cron: '0 0 * * 1'  # Every Monday at midnight
+
+jobs:
+  scan-secrets:
+    name: TruffleHog Secrets Scan
+    runs-on: [self-hosted, Linux, X64]
+    permissions:
+      contents: read
+      actions: read
+      security-events: write  # For uploading SARIF results to GitHub Security tab
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0  # Full history for scanning all commits
+
+      - name: Run TruffleHog scan
+        uses: trufflesecurity/trufflehog@main
+        with:
+          # Scan the entire git history
+          path: ./
+          base: ""  # Scan from the beginning of git history
+          head: ${{ github.ref }}
+          # Output results in JSON format
+          extra_args: --json --only-verified
+      
+      # Optional: Upload results to GitHub Security tab
+      - name: Upload TruffleHog results to Security tab
+        uses: github/codeql-action/upload-sarif@v4
+        if: always()
+        with:
+          sarif_file: results.sarif
+          category: trufflehog-secrets
