@@ -2,32 +2,12 @@
 
 from __future__ import annotations
 
-import pytest
-
 from up_bank_sdk.models.resources import (
     Account,
-    AccountAttributes,
-    Attachment,
-    AttachmentAttributes,
     Category,
-    CategoryAttributes,
-    CategoryChildren,
-    CategoryParent,
-    HoldInfo,
     MoneyObject,
-    PingMeta,
-    Tag,
-    TagResourceIdentifier,
     Transaction,
-    TransactionAttributes,
-    TransactionRelationships,
     UtilPingResponse,
-    Webhook,
-    WebhookAttributes,
-    WebhookLog,
-    WebhookLogAttributes,
-    WebhookLogRequest,
-    WebhookLogResponseData,
 )
 
 

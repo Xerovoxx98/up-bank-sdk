@@ -2,6 +2,8 @@
 
 from __future__ import annotations
 
+from types import TracebackType
+
 from up_bank_sdk.api import (
     AccountsResource,
     AttachmentsResource,
@@ -34,3 +36,18 @@ class Client:
         self.attachments = AttachmentsResource(self._http)
         self.webhooks = WebhooksResource(self._http)
         self.util = UtilResource(self._http)
+
+    def close(self) -> None:
+        """Close the client and release resources."""
+        self._http.close()
+
+    def __enter__(self) -> Client:
+        return self
+
+    def __exit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: TracebackType | None,
+    ) -> None:
+        self.close()
