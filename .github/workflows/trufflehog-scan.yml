@@ -14,16 +14,16 @@ jobs:
     permissions:
       contents: read
       actions: read
-      security-events: write  # For uploading SARIF results to GitHub Security tab
-    
+      security-events: write
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
         with:
-          fetch-depth: 0  # Full history for scanning all commits
+          fetch-depth: 0
 
-      - name: Run TruffleHog scan
-        run: |
-          wget -q https://github.com/trufflesecurity/trufflehog/releases/download/v3.63.0/trufflehog-linux-x86_64
-          chmod +x trufflehog-linux-x86_64
-          ./trufflehog-linux-x86_64 git file://.
+      - name: Run TruffleHog
+        uses: trufflesecurity/trufflehog-action@main
+        with:
+          path: ./
+          baseDepth: 0
