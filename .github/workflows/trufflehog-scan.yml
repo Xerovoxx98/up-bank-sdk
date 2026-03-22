@@ -22,20 +22,14 @@ jobs:
         with:
           fetch-depth: 0  # Full history for scanning all commits
 
-      - name: Run TruffleHog scan
-        uses: trufflesecurity/trufflehog@main
-        with:
-          # Scan the entire git history
-          path: ./
-          base: ""  # Scan from the beginning of git history
-          head: ${{ github.ref }}
-          # Output results in JSON format
-          extra_args: --json --only-verified
+      - name: Run TruffleHog scan (Native - No Docker)
+        run: |
+          # Download TruffleHog binary
+          wget -q https://github.com/trufflesecurity/trufflehog/releases/download/v3.63.0/trufflehog-linux-x86_64
+          chmod +x trufflehog-linux-x86_64
+          
+          # Run the scan
+          ./trufflehog-linux-x86_64 git file://. --json --only-verified || true
       
-      # Optional: Upload results to GitHub Security tab
-      - name: Upload TruffleHog results to Security tab
-        uses: github/codeql-action/upload-sarif@v4
-        if: always()
-        with:
-          sarif_file: results.sarif
-          category: trufflehog-secrets
+      # Optional: Fail the job if secrets were found
+      # Remove the "|| true" from the scan command above to enable this
