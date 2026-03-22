@@ -27,8 +27,16 @@ jobs:
         run: |
           set +e  # Disable exit on error
           
-          # Download TruffleHog binary
+          # Download TruffleHog binary and its SHA256 checksum
           wget -q https://github.com/trufflesecurity/trufflehog/releases/download/v3.63.0/trufflehog-linux-x86_64
+          wget -q https://github.com/trufflesecurity/trufflehog/releases/download/v3.63.0/trufflehog-linux-x86_64.sha256
+          
+          echo "Verifying TruffleHog binary checksum..."
+          if ! sha256sum -c trufflehog-linux-x86_64.sha256; then
+            echo "❌ TruffleHog binary checksum verification failed. Aborting."
+            exit 1
+          fi
+          
           chmod +x trufflehog-linux-x86_64
           
           # Run the scan
@@ -42,8 +50,7 @@ jobs:
             echo "Review the output above for details."
           fi
           
-          # Always exit successfully so workflow continues
-          exit 0
+          exit $EXIT_CODE
       
-      # Optional: Want to fail the workflow when secrets are found?
-      # Change the last line from "exit 0" to "exit $EXIT_CODE"
+      # Optional: Want the workflow to succeed even when secrets are found?
+      # Change the last line from "exit $EXIT_CODE" to "exit 0"
