@@ -1,0 +1,28 @@
+name: MiniMax Code Review (Official)
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  review:
+    name: AI Code Review
+    runs-on: [self-hosted, Linux, X64]
+    
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: MiniMax Code Review
+        uses: tarmojussila/minimax-code-review@v0.3.0
+        with:
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+          MINIMAX_MODEL: MiniMax-M2.7-highspeed
+          MINIMAX_SYSTEM_PROMPT: "You are an expert code reviewer. Analyze code changes for bugs, performance issues, security concerns, documentation gaps, and best practice violations. Prioritize issues by severity."
+          MINIMAX_REVIEWER_NAME: "MiniMax AI"
