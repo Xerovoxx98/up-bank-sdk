@@ -35,7 +35,11 @@ class TestSyncHTTPClient:
         """Test that client can be used as context manager."""
         with client as c:
             assert c is client
+            # Ensure a session is created within the context
+            c._get_session()
+            assert c._session is not None
         # Session should be closed after exiting context
+        assert client._session is None
 
     def test_close_closes_session(self, client: SyncHTTPClient) -> None:
         """Test that close() closes the session."""
