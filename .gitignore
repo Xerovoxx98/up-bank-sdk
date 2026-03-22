@@ -139,7 +139,6 @@ celerybeat.pid
 .envrc
 
 # Scripts
-scripts/
 .venv
 env/
 venv/

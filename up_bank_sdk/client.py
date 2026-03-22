@@ -34,3 +34,13 @@ class Client:
         self.attachments = AttachmentsResource(self._http)
         self.webhooks = WebhooksResource(self._http)
         self.util = UtilResource(self._http)
+
+    def close(self) -> None:
+        """Close the client and release resources."""
+        self._http.close()
+
+    def __enter__(self) -> Client:
+        return self
+
+    def __exit__(self, exc_type: object, exc_val: object, exc_tb: object) -> None:
+        self.close()

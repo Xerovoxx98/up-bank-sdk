@@ -78,7 +78,10 @@ class SyncHTTPClient:
             )
 
         if status == 422:
-            json_body = response.json() if response.content else {}
+            try:
+                json_body = response.json() if response.content else {}
+            except Exception:
+                json_body = {}
             errors = json_body.get("errors", [])
             raise InvalidRequestError(
                 status,
@@ -87,7 +90,11 @@ class SyncHTTPClient:
             )
 
         if status == 429:
-            retry_after = int(response.headers.get("Retry-After", "0"))
+            try:
+                retry_after_str = response.headers.get("Retry-After", "0")
+                retry_after = int(retry_after_str) if retry_after_str else None
+            except (ValueError, TypeError):
+                retry_after = None
             raise RateLimitError(
                 status,
                 "Rate limit exceeded.",
@@ -185,3 +192,15 @@ class SyncHTTPClient:
             reraise=True,
         )(self._do_request)
         return decorated("DELETE", url, **kwargs)
+
+    def close(self) -> None:
+        """Close the HTTP client and release resources."""
+        if self._session is not None:
+            self._session.close()
+            self._session = None
+
+    def __enter__(self) -> SyncHTTPClient:
+        return self
+
+    def __exit__(self, exc_type: object, exc_val: object, exc_tb: object) -> None:
+        self.close()

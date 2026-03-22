@@ -13,10 +13,15 @@ class AccountAttributes(UpModel):
     """Attributes for an account."""
 
     display_name: str = Field(alias="displayName")
-    account_type: str = Field(alias="accountType")
-    ownership_type: str = Field(alias="ownershipType")
+    account_type: Literal["TRANSACTIONAL", "SAVER", "JOINT", "EVERYDAY"] = Field(
+        alias="accountType"
+    )
+    ownership_type: Literal["INDIVIDUAL", "JOINT"] = Field(alias="ownershipType")
     balance: MoneyObject
     created_at: str = Field(alias="createdAt")
+    closed_at: str | None = Field(default=None, alias="closedAt")
+    account_number: str | None = Field(default=None, alias="accountNumber")
+    bsb: str | None = Field(default=None, alias="bsb")
 
 
 class Account(UpModel):
@@ -59,7 +64,7 @@ class MerchantInfo(UpModel):
 class TransactionAttributes(UpModel):
     """Attributes for a transaction."""
 
-    status: str
+    status: Literal["SETTLED", "PENDING", "HELD", "DECLINED", "FAILED"]
     raw_text: str | None = Field(default=None, alias="rawText")
     description: str
     message: str | None = None
@@ -71,6 +76,9 @@ class TransactionAttributes(UpModel):
     tags: list[TagResourceIdentifier] = Field(default_factory=list)
     created_at: str = Field(alias="createdAt")
     merchant: MerchantInfo | None = None
+    decline_reason: str | None = Field(default=None, alias="declineReason")
+    card_purchase_state: str | None = Field(default=None, alias="cardPurchaseState")
+    card_interaction: str | None = Field(default=None, alias="cardInteraction")
 
 
 class TransactionRelationships(UpModel):
@@ -101,6 +109,7 @@ class CategoryAttributes(UpModel):
     """Attributes for a category."""
 
     name: str
+    created_at: str | None = Field(default=None, alias="createdAt")
 
 
 class CategoryParent(UpModel):

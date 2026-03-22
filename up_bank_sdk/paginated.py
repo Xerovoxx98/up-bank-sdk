@@ -70,9 +70,7 @@ class PaginatedResponse(Generic[T]):
         """
         if not self.has_more:
             return None
-        if self._links.next is None:
-            return None
-        return self._fetch_fn(self._links.next)
+        return self._fetch_fn(self._links.next)  # type: ignore[arg-type]
 
     def __iter__(self) -> Iterator[T]:
         """Iterate over items in this page only."""

@@ -78,7 +78,10 @@ class AsyncHTTPClient:
             )
 
         if status == 422:
-            json_body = response.json() if response.content else {}
+            try:
+                json_body = response.json() if response.content else {}
+            except Exception:
+                json_body = {}
             errors = json_body.get("errors", [])
             raise InvalidRequestError(
                 status,
@@ -87,7 +90,11 @@ class AsyncHTTPClient:
             )
 
         if status == 429:
-            retry_after = int(response.headers.get("Retry-After", "0"))
+            try:
+                retry_after_str = response.headers.get("Retry-After", "0")
+                retry_after = int(retry_after_str) if retry_after_str else None
+            except (ValueError, TypeError):
+                retry_after = None
             raise RateLimitError(
                 status,
                 "Rate limit exceeded.",
@@ -210,5 +217,10 @@ class AsyncHTTPClient:
     async def __aenter__(self) -> AsyncHTTPClient:
         return self
 
-    async def __aexit__(self, exc_type: Any, exc_val: Any, exc_tb: Any) -> None:
+    async def __aexit__(
+        self,
+        exc_type: type[BaseException] | None,
+        exc_val: BaseException | None,
+        exc_tb: object,
+    ) -> None:
         await self.close()
