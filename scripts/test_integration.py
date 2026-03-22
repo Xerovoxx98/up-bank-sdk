@@ -146,14 +146,13 @@ def _test_sync_client(client: Client) -> None:
             print(f"Logs error: {e}")
     else:
         print("\n--- Testing webhooks.create ---")
+        webhook = client.webhooks.create("https://example.com/test-webhook")
         try:
-            webhook = client.webhooks.create("https://example.com/test-webhook")
             print(f"Created webhook: {webhook.id} -> {webhook.attributes.url}")
+        finally:
             print(f"Deleting webhook {webhook.id}...")
             client.webhooks.delete(webhook.id)
             print("Deleted successfully")
-        except Exception as e:
-            print(f"Webhook create/delete error: {e}")
 
 
 async def _test_async_client(token: str) -> None:
@@ -264,14 +263,13 @@ async def _test_async_client(token: str) -> None:
                 print(f"Logs error: {e}")
         else:
             print("\n--- Testing webhooks.create ---")
+            webhook = await client.webhooks.create("https://example.com/test-webhook")
             try:
-                webhook = await client.webhooks.create("https://example.com/test-webhook")
                 print(f"Created webhook: {webhook.id} -> {webhook.attributes.url}")
+            finally:
                 print(f"Deleting webhook {webhook.id}...")
                 await client.webhooks.delete(webhook.id)
                 print("Deleted successfully")
-            except Exception as e:
-                print(f"Webhook create/delete error: {e}")
 
         print("\n--- Testing auto-pagination with async for ---")
         print("Fetching transactions using async iteration:")
