@@ -4,8 +4,6 @@ from __future__ import annotations
 
 from typing import Any
 
-import pytest
-
 from up_bank_sdk.paginated import PaginatedResponse
 
 
