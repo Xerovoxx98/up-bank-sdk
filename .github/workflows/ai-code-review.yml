@@ -20,8 +20,9 @@ jobs:
           fetch-depth: 0
 
       - name: MiniMax Code Review
-        uses: minimax-ai/minimax-code-review@v1
+        uses: tarmojussila/minimax-code-review@v0.3.0
         with:
-          minimax_api_key: ${{ secrets.MINIMAX_API_KEY }}
-          model: MiniMax-M2.7-highspeed
-          github_token: ${{ secrets.GITHUB_TOKEN }}
+          MINIMAX_API_KEY: ${{ secrets.MINIMAX_API_KEY }}
+          MINIMAX_MODEL: MiniMax-M2.7-highspeed
+          MINIMAX_SYSTEM_PROMPT: "You are an expert code reviewer. Analyze code changes for bugs, performance issues, security concerns, documentation gaps, and best practice violations. Prioritize issues by severity."
+          MINIMAX_REVIEWER_NAME: "MiniMax AI"
